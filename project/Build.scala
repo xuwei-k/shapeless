@@ -27,7 +27,7 @@ object ShapelessBuild extends Build {
   lazy val shapeless = Project(
     id = "shapeless", 
     base = file("."),
-    aggregate = Seq(shapelessCore, shapelessExamples),
+    aggregate = Seq(shapelessCore, shapelessExamples, allExampleRun),
     settings = commonSettings ++ Seq(
       moduleName := "shapeless-root",
         
@@ -82,6 +82,32 @@ object ShapelessBuild extends Build {
 
       publish := (),
       publishLocal := ()
+    )
+  )
+
+  lazy val genAllMainRun = TaskKey[File]("gen-all-main-run")
+
+  lazy val allExampleRun = Project(
+    id = "all-example-run",
+    base = file("all-example-run"),
+    dependencies = Seq(shapelessExamples),
+    settings = commonSettings ++ Seq(
+      genAllMainRun <<= (sourceManaged in Compile, discoveredMainClasses in Compile in shapelessExamples).map{ 
+        (dir,mainClasses) =>
+        val ignoreClasses = Seq("NewtypeExampes","LinearAlgebraExamples").map("shapeless.examples." + _)
+        val src =
+        """package shapeless.example
+          |
+          |object AllMainRun extends App{
+          |  %s
+          |}
+          |""".stripMargin.format(mainClasses.filterNot(ignoreClasses.contains).map{_ + ".main(Array())"}.mkString("\n"))
+
+        val generated:File = dir / "shapeless" / "AllMainRun.scala"
+        IO.write(generated, src)
+        generated
+      },
+      sourceGenerators in Compile <+= genAllMainRun.map(Seq(_))
     )
   )
   
