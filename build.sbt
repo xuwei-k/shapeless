@@ -331,7 +331,7 @@ def buildInfoSetup(crossProject: CrossProject): CrossProject = {
     buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, gitHeadCommit),
     buildInfoOptions += BuildInfoOption.BuildTime
   )
-  crossProject jvmConfigure transform jsConfigure transform nativeConfigure transform
+  crossProject jvmConfigure transform jsConfigure transform //nativeConfigure transform
 }
 
 lazy val coreOsgiSettings = osgiSettings ++ Seq(
