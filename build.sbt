@@ -177,6 +177,11 @@ lazy val examples = crossProject(JSPlatform, JVMPlatform, NativePlatform).crossT
   .settings(noPublishSettings:_*)
   .jsSettings(commonJsSettings:_*)
   .jvmSettings(commonJvmSettings:_*)
+  .nativeSettings(
+    sources in Compile ~= {
+      _.filterNot(_.getName == "sexp.scala")
+    }
+  )
 
 lazy val examplesJVM = examples.jvm
 lazy val examplesJS = examples.js
