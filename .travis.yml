@@ -2,22 +2,11 @@ language: scala
 install:
   - pip install --user codecov
 
-scala:
-- 2.10.7
-- 2.11.12
-- 2.12.4
-- 2.13.0-M2
-
 jdk:
 - oraclejdk8
 
-cache:
-  directories:
-    - $HOME/.ivy2/cache
-    - $HOME/.sbt
-
 script:
-  - travis_wait 60 scripts/travis-publish.sh
+  - scripts/travis-publish.sh
 
 env:
   global:
@@ -26,12 +15,6 @@ env:
 
 sudo: false
 
-notifications:
-  irc: "chat.freenode.net#shapeless"
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/e58e987de2f64f32c8c6
-
 matrix:
   include:
   - scala: 2.11.12
@@ -39,4 +22,4 @@ matrix:
     jdk: oraclejdk8
     sudo: required
     before_install:
-    - curl  https://raw.githubusercontent.com/scala-native/scala-native/master/bin/travis_setup.sh | travis_wait 15 bash -x
+    - curl  https://raw.githubusercontent.com/scala-native/scala-native/master/bin/travis_setup.sh | bash -x
