@@ -69,7 +69,6 @@ final class ErasedProductInstances1[K, FT](val mirror: Mirror.Product, i: Any) e
 }
 
 final class ErasedProductInstancesN[K, FT](val mirror: Mirror.Product, is: Array[Any]) extends ErasedProductInstances[K, FT] {
-  import ErasedProductInstances.ArrayProduct
 
   inline def toProduct(x: Any): Product = x.asInstanceOf[Product]
 
@@ -77,13 +76,13 @@ final class ErasedProductInstancesN[K, FT](val mirror: Mirror.Product, is: Array
     val n = is.length
     if (n == 0) mirror.fromProduct(None)
     else {
-      val arr = new Array[Any](n)
+      val arr = new Array[AnyRef](n)
       var i = 0
       while(i < n) {
-        arr(i) = f(is(i))
+        arr(i) = f(is(i)).asInstanceOf[AnyRef]
         i = i+1
       }
-      mirror.fromProduct(ArrayProduct(arr))
+      mirror.fromProduct(new ArrayProduct(arr))
     }
   }
 
@@ -91,7 +90,7 @@ final class ErasedProductInstancesN[K, FT](val mirror: Mirror.Product, is: Array
     val n = is.length
     if (n == 0) (a, Some(mirror.fromProduct(None)))
     else {
-      val arr = new Array[Any](n)
+      val arr = new Array[AnyRef](n)
       var acc = a
       var i = 0
       while(i < n) {
@@ -99,13 +98,13 @@ final class ErasedProductInstancesN[K, FT](val mirror: Mirror.Product, is: Array
         e0 match {
           case Some(e) =>
             acc = acc0
-            arr(i) = e
+            arr(i) = e.asInstanceOf[AnyRef]
           case None =>
             return (acc0, None)
         }
         i = i+1
       }
-      (acc, Some(mirror.fromProduct(ArrayProduct(arr))))
+      (acc, Some(mirror.fromProduct(new ArrayProduct(arr))))
     }
   }
 
@@ -114,13 +113,13 @@ final class ErasedProductInstancesN[K, FT](val mirror: Mirror.Product, is: Array
     if (n == 0) x0
     else {
       val x = toProduct(x0)
-      val arr = new Array[Any](n)
+      val arr = new Array[AnyRef](n)
       var i = 0
       while(i < n) {
-        arr(i) = f(is(i), x.productElement(i))
+        arr(i) = f(is(i), x.productElement(i)).asInstanceOf[AnyRef]
         i = i+1
       }
-      mirror.fromProduct(ArrayProduct(arr))
+      mirror.fromProduct(new ArrayProduct(arr))
     }
   }
 
@@ -130,13 +129,13 @@ final class ErasedProductInstancesN[K, FT](val mirror: Mirror.Product, is: Array
     else {
       val x = toProduct(x0)
       val y = toProduct(y0)
-      val arr = new Array[Any](n)
+      val arr = new Array[AnyRef](n)
       var i = 0
       while(i < n) {
-        arr(i) = f(is(i), x.productElement(i), y.productElement(i))
+        arr(i) = f(is(i), x.productElement(i), y.productElement(i)).asInstanceOf[AnyRef]
         i = i+1
       }
-      mirror.fromProduct(ArrayProduct(arr))
+      mirror.fromProduct(new ArrayProduct(arr))
     }
   }
 
@@ -181,13 +180,6 @@ final class ErasedProductInstancesN[K, FT](val mirror: Mirror.Product, is: Array
 }
 
 object ErasedProductInstances {
-  class ArrayProduct(val elems: Array[Any]) extends Product {
-    def canEqual(that: Any): Boolean = true
-    def productElement(n: Int) = elems(n)
-    def productArity = elems.length
-    override def productIterator: Iterator[Any] = elems.iterator
-  }
-
   inline def summonOne[T] = inline erasedValue[T] match {
     case _: Tuple1[a] => summon[a]
   }
