@@ -2,16 +2,19 @@ import com.github.sbt.git.SbtGit.GitKeys.*
 import sbtcrossproject.CrossProject
 
 val Scala212 = "2.12.18"
-val Scala213 = "2.13.11"
+val Scala213 = "2.13.12"
 
 commonSettings
 noPublishSettings
 crossScalaVersions := Nil
 
 ThisBuild / organization := "com.chuusai"
-ThisBuild / scalaVersion := Scala213
+ThisBuild / scalaVersion := "2.13.13-bin-3153973"
+ThisBuild / scalacOptions += "-quickfix:msg=Implicit definition should have explicit type"
 ThisBuild / crossScalaVersions := Seq(Scala212, Scala213)
 ThisBuild / mimaFailOnNoPrevious := false
+
+Global / resolvers += "scala-integration" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
 
 // GHA configuration
 
@@ -62,8 +65,6 @@ def scalacOptionsAll(pluginJar: File) = List(
   "-deprecation",
   "-unchecked",
   "-language:higherKinds,implicitConversions",
-  "-Xfatal-warnings",
-  "-Wconf:cat=other-implicit-type:s",
   s"-Xplugin:${pluginJar.getAbsolutePath}",
   s"-Jdummy=${pluginJar.lastModified}"
 )
@@ -73,14 +74,6 @@ lazy val commonSettings = crossVersionSharedSources ++ Seq(
   resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
   incOptions := incOptions.value.withLogRecompileOnMacro(false),
   scalacOptions := scalacOptionsAll((plugin / Compile / packageBin).value),
-  Compile / compile / scalacOptions ++= Seq(
-    "-Ywarn-unused:-implicits",
-    "-Xlint:-adapted-args,-delayedinit-select,-nullary-unit,-package-object-classes,-type-parameter-shadow,_"
-  ),
-  Compile / compile / scalacOptions ++= (scalaBinaryVersion.value match {
-    case "2.13" => Seq("-Xlint:-byname-implicit")
-    case _ => Nil
-  }),
   Compile / console / scalacOptions -= "-Xfatal-warnings",
   Test / console / scalacOptions -= "-Xfatal-warnings",
   console / initialCommands := """import shapeless._""",
@@ -119,6 +112,9 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(Compile / sourceManaged := baseDirectory.value.getParentFile / "shared" / "src" / "main" / "managed")
   .settings(Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.gen).taskValue)
   .settings(mimaSettings)
+  .settings(
+    scalacOptions += "-quickfix:msg=Implicit definition should have explicit type"
+  )
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
